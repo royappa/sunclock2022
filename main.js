@@ -26,6 +26,7 @@ var SunClock = (function() {
 		moonTimes, moonPosition, moonPhase, moonHand, moonIcon, moonPath,
 		radius,
 		direction = 1, // 1 = clockwise, -1 = anticlockwise
+		hours24 = 1, // 1 = 24-hour format, 0 = am/pm
 		location,      // {"latitude":0,"longitude":0}
 		theme = 1; 	   // 1 = light, 		2 = dark, 		3 = auto}
 
@@ -425,8 +426,14 @@ var SunClock = (function() {
 			g.setAttribute('transform', `rotate(${angle}) translate(0,${radius + h * offset})`);
 
 			if (vertical) {
-				g.innerHTML = `<circle cx="0" cy="0" r="${(h*0.833)}" fill="rgba(255,255,255,0.33)" stroke="none" />`;
-				g.innerHTML += `<text x="0" y="${(h*0.375)}" transform="rotate(${angle*-1})">${i?i:n}</text>`;
+				var rad = hours24 ? 0.833 : 1.33;
+				g.innerHTML = `<circle cx="0" cy="0" r="${(h*rad)}" fill="rgba(255,255,255,0.33)" stroke="none" />`;
+				var hour = i?i:n;
+				if (!hours24) {
+					hour =  hour<12 ? (hour+"am") :
+							    hour==12 ? "12pm" : (hour-12)+"pm";
+				}
+				g.innerHTML += `<text x="0" y="${(h*0.375)}" transform="rotate(${angle*-1})">${hour}</text>`;
 			} else {
 				if ((angle >= 90) && (angle <= 270)) {
 					g.innerHTML = `<text x="0" y="0" transform="rotate(180)">${i?i:n}</text>`;
@@ -467,6 +474,10 @@ var SunClock = (function() {
 		  case 'showHourMarks':
 			$('#hourMarks').style.display = (checkbox.checked) ? 'block' : 'none';
 			$('#hourMarks2').style.display = (checkbox.checked) ? 'block' : 'none';
+			break;
+			case 'show24HourTime':
+				hours24 = (checkbox.checked) ? 1 : 0;
+				drawNumbers();
 			break;
 		  case 'showMinuteHand':
 			minuteHand.style.display = (checkbox.checked) ? 'block' : 'none';
@@ -593,6 +604,9 @@ var SunClock = (function() {
 			$('input[name="showHourMarks"]').checked = false;
 			$('#hourMarks').style.display = 'none';
 			$('#hourMarks2').style.display = 'none';
+		}
+		if (getItem('show24HourTime') === false) {
+			$('input[name="show24HourTime"]').checked = false;
 		}
 		if (getItem('showMinuteHand') === false) {
 			$('input[name="showMinuteHand"]').checked = false;
